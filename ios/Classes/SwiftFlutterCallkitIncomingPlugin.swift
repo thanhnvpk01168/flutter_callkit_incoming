@@ -381,10 +381,10 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        // guard let call = self.callManager?.callWithUUID(uuid: action.callUUID) else{
-        //     action.fail()
-        //     return
-        // }
+        guard let call = self.callManager?.callWithUUID(uuid: action.callUUID) else{
+            action.fail()
+            return
+        }
         // DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1200)) {
         //     self.configurAudioSession()
         // }
