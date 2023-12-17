@@ -41,7 +41,7 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 import okhttp3.OkHttpClient
 
-
+private var cleanedNotificationId: Boolean = false
 class CallkitNotificationManager(private val context: Context) {
 
     companion object {
@@ -59,8 +59,12 @@ class CallkitNotificationManager(private val context: Context) {
 
     private var targetLoadAvatarDefault = object : Target {
         override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-            notificationBuilder.setLargeIcon(bitmap)
-            getNotificationManager().notify(notificationId, notificationBuilder.build())
+            if(!cleanedNotificationId){
+                notificationBuilder.setLargeIcon(bitmap)
+                if(!cleanedNotificationId){
+                    getNotificationManager().notify(notificationId, notificationBuilder.build())
+                }
+            }                        
         }
 
         override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
@@ -72,11 +76,15 @@ class CallkitNotificationManager(private val context: Context) {
 
     private var targetLoadAvatarCustomize = object : Target {
         override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
-            notificationViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
-            notificationViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
-            notificationSmallViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
-            notificationSmallViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
-            getNotificationManager().notify(notificationId, notificationBuilder.build())
+            if(!cleanedNotificationId){
+                notificationViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
+                notificationViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
+                notificationSmallViews?.setImageViewBitmap(R.id.ivAvatar, bitmap)
+                notificationSmallViews?.setViewVisibility(R.id.ivAvatar, View.VISIBLE)
+                if(!cleanedNotificationId){
+                    getNotificationManager().notify(notificationId, notificationBuilder.build())
+                }
+            }            
         }
 
         override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
@@ -89,7 +97,7 @@ class CallkitNotificationManager(private val context: Context) {
 
     fun showIncomingNotification(data: Bundle) {
         data.putLong(EXTRA_TIME_START_CALL, System.currentTimeMillis())
-
+        cleanedNotificationId = false
         notificationId = data.getString(EXTRA_CALLKIT_ID, "callkit_incoming").hashCode()
         createNotificationChanel(
             data.getString(EXTRA_CALLKIT_INCOMING_CALL_NOTIFICATION_CHANNEL_NAME, "Incoming Call"),
@@ -329,6 +337,7 @@ class CallkitNotificationManager(private val context: Context) {
 
 
     fun clearIncomingNotification(data: Bundle) {
+        cleanedNotificationId = true
         context.sendBroadcast(CallkitIncomingActivity.getIntentEnded(context))
         notificationId = data.getString(EXTRA_CALLKIT_ID, "callkit_incoming").hashCode()
         getNotificationManager().cancel(notificationId)
